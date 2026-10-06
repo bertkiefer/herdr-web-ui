@@ -31,6 +31,10 @@ between releases do not reach them. Remote-PC runtime bundles are versioned sepa
   checkouts too. ([#521](https://github.com/devswha/herdr-web-ui/pull/521))
 
 ### Fixed
+- A workspace row's state rolls up as herdr's does. A workspace with one finished agent and one
+  still running shows DONE, where it showed RUN, and a folded worktree group shows the most
+  urgent state among its checkouts instead of the repository workspace's alone.
+  ([#521](https://github.com/devswha/herdr-web-ui/pull/521))
 - Codex chat hides internal memory citation blocks and pairs the answer with its display record,
   so a reply that uses memory appears once without raw citation markup. Quoted code examples
   keep their text. ([#514](https://github.com/devswha/herdr-web-ui/pull/514) by @JJLiebig)

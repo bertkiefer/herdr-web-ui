@@ -592,6 +592,9 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
     const secondaryWorkspaceLabel = branchTitle && workspace.label !== branchTitle && workspace.label !== worktreeLabel(branchTitle) ? workspace.label : null;
     const paths = [...new Set([workspace.worktree?.checkout_path, pane.cwd].filter((path): path is string => Boolean(path)))];
     const collapsed = children.length > 0 && repoKey !== undefined && collapsedWorktrees.has(repoKey);
+    // a folded group's parent stands for its worktrees too, as herdr's collapsed parent does:
+    // a checkout that waits or has finished must not hide behind the fold
+    const statusPanes = collapsed ? [...panes, ...children.flatMap((child) => roster.filter((candidate) => candidate.workspace_id === child.workspace_id))] : panes;
     const editingWorkspace = editingWorkspaceId === `\u0000${workspace.workspace_id}`;
     const editingPane = editingPaneId === pane.pane_id;
     const menuOpen = menu?.workspace.workspace_id === workspace.workspace_id && menu.scope === "" && menu.kind === "workspace";
@@ -661,7 +664,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
             {secondaryWorkspaceLabel && <span className="worktree-workspace-label">{secondaryWorkspaceLabel}</span>}
           </span>}
           <span className="sidebar-pane-meta">
-            {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={rollupStatus(panes.map((candidate) => candidate.agent_status))} />}
+            {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={rollupStatus(statusPanes.map((candidate) => candidate.agent_status))} />}
           </span>
         </div>
         <div className="workspace-actions">
