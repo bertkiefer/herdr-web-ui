@@ -8,16 +8,17 @@ value. When a component needs a value that is not here, add it to both first.
 
 A warm terminal: an amber-phosphor console on lamp-lit graphite (dark) or ledger paper (light),
 with chat-app clarity. Tonal surfaces and hairlines keep the chrome out of the way. There is ONE
-chrome color, amber: selection, focus, the terminal cursor and the user's own action (Send, primary
+chrome color, amber: focus, the chosen lens, the terminal cursor and the user's own action (Send, primary
 buttons). Agent states carry the remaining saturated colors and none of them is amber. The user's
 chat turns are neutral raised cards, so a long thread never turns into a wall of color. Dark is the
 default, light follows the same hierarchy, and comfortable or compact density changes scale without
 changing information architecture. A dark report look, a neutral charcoal one, Catppuccin and lilac are
 opt-in palettes (Settings → Appearance → Colors); amber stays the default and the look before settings load.
 
-The signature is the amber status rail: a 3px bar on the selected pane row (whose mark box also
-takes an amber edge), the same amber on focus, the chosen lens glyph and the terminal cursor, tying
-“what I am looking at” to “where I am typing.”
+The sidebar uses neutral rounded surfaces for the selected workspace and agent rows. Workspaces
+and Agents are independent lists, as in herdr's Spaces and Agents panels; tab and pane navigation
+stays over the terminal and in the palette. Amber connects focus, the chosen lens glyph and the
+terminal cursor, while compact status glyphs keep each agent's state visible beside its title.
 
 ## 2. Color
 
@@ -124,8 +125,9 @@ CSS tokens verbatim for each resolved theme and palette (`settings.test.ts` chec
   primary the brighter fill carrying ink text. Agent states never use amber. The report palette
   keeps the same split, accent (blue) marks and primary (white, or ink on paper) acts, and there
   agent states never use blue.
-- Agent state is always written as a label as well as colored. Unknown uses dim text and a dashed
-  edge rather than inventing a fifth state color.
+- Agent state has a written label as well as color. The sidebar's compact glyphs keep their labels
+  in tooltips and screen-reader text; other surfaces draw the words. Unknown uses dim text and a
+  question-circle glyph in the sidebar, or a dashed badge edge elsewhere.
 - Tints are named tokens; components do not introduce ad hoc translucent state colors.
 - `theme: "system"` follows `prefers-color-scheme`; `src/lib/settings.ts` writes the resolved
   `data-theme`, `color-scheme`, and matching PWA `<meta name="theme-color">`.
@@ -243,9 +245,9 @@ Comfortable values are `:root`; the final column is the complete compact overrid
 | `--chip-h` | `20px` | `18px` | Badge/pill height |
 | `--icon-size` | `18px` | — | Standard icon |
 | `--mark-size` | `22px` | — | Brand mark |
-| `--avatar-size` | `32px` | `26px` | Roster mark box |
+| `--avatar-size` | `32px` | `26px` | Command-palette mark box |
 | `--dot-size` | `7px` | — | Connection dot |
-| `--rail-w` | `3px` | — | Selected-row rail |
+| `--rail-w` | `3px` | — | Device and quoted-content rails |
 | `--hairline` | `1px` | — | Borders |
 | `--content-w` | `820px` | — | Settings and dialog content |
 | `--chat-w` | `--content-w`, then the pane's lane as one length | — | Chat lane: transcript, composer column, held list. Settings → Chat width: Narrow `--content-w`; Default follows the pane (min 820px, max `60rem` = 960px, 71% of the pane between; the px floor wins where 60rem is under it); Wide `72rem` (1152px); Full `100%` |
@@ -356,15 +358,18 @@ One set for both themes: the card is island black wherever it shows.
 - Hover or `aria-selected` uses `--bg-hover`. Headings are dim uppercase micro labels.
 - The sidebar's row menu (`.row-menu`) is a `.menu` drawn through a portal at fixed coordinates,
   under its `⋯` with right edges aligned, above it when the screen ends first, and over the drawer.
-  A workspace row offers Rename workspace, Rename pane (the pane the row shows), New tab, New worktree,
-  Open worktree…, then Close under a hairline (Close workspace when the workspace has several panes). A worktree workspace's row has no worktree items and ends in
-  **Delete worktree checkout…** after Close. The
+  In workspace mode, a row offers Rename workspace, Rename pane (the pane it opens), New tab,
+  New worktree, Open worktree…, then Close workspace under a hairline. In folder mode, a representative row keeps Rename workspace,
+  Rename pane (the pane the row shows), New tab, New worktree, Open worktree…, then Close
+  (Close workspace when it has several panes). A worktree workspace has no worktree items and
+  ends in **Delete worktree checkout…** after Close. The
   danger item takes `--status-blocked`. At `<=640px` it is a `.modal` bottom sheet (`.row-sheet`):
   a grip, the row's name and place, 48px rows and a Cancel button; Tab stays among them. Escape, a press outside and
   focus leaving it close it (on a desktop a scroll or a resize too), and focus returns to the
   `⋯`. Arrow keys move between items. A row that leaves the roster takes its open menu with it.
-- Close follows herdr's `ui.confirm_close`: a close takes the workspace with it, so it asks in a
-  confirm first. After a confirmed close, focus lands on the header's workspace-list toggle.
+- Close follows herdr's `ui.confirm_close`: a workspace close, or a pane close that takes its
+  workspace with it, asks in a confirm first. A busy pane also asks before it stops. After a
+  confirmed close, focus lands on the header's workspace-list toggle.
 - The tab strip's pane picker is the same menu: one item per pane of the tab, the agent's mark
   (or the shell glyph) and the pane's title, the open pane named in the strong colour
   (`aria-current`).
@@ -374,48 +379,90 @@ One set for both themes: the card is island black wherever it shows.
 - Idle is elevated/dim; working, blocked and done use their own tint and text. RUN carries a small
   breathing dot before the word; the word itself never fades.
 - The written label and unknown dashed edge keep color from being the only signal.
+- The sidebar's compact variant draws a circle for ready, a stepped spinning circle for working,
+  a message circle for input, a check for done and a question circle for unknown. The same labels
+  remain in tooltips and screen-reader text; each state has its own glyph as well as its color.
 
 ### Pill (`.pill`)
 - Mono metadata at `--chip-h`. The **Needs you** count is one; offline is the one header pill and uses danger tokens.
 
 ### Sidebar roster row and footer
-- No top bar. The sidebar opens with the plan panel (when Settings puts it there), **Needs you**
-  and the PC groups. A workspace starts from the `+` on its PC's header, or from the **New workspace**
+- No top bar. The sidebar opens with the plan panel (when Settings puts it there), **Needs you**,
+  the PC workspace groups and a separate **Agents** list spanning the connected PCs. A workspace starts from the `+` on its PC's header, or from the **New workspace**
   button in the dashed **No workspaces yet** box of an empty PC. **Add PC** lives in Settings →
   Remote PCs and in the command palette. Search lives in the command palette, not the roster.
-- One row per workspace, as herdr's Spaces sidebar: no workspace headers, numbers or folds. The
-  row stands for the workspace through its *current pane*: the selected pane when it is in the
-  workspace, else the pane last viewed there, else the one herdr has in front. Its mark, title
-  and folder are that pane's; its state word is the roll-up of every pane in the workspace
-  (blocked, then working, then done, then ready), as herdr rolls a workspace up. The other panes
-  of a workspace are reached from the tab strip over the pane, the command palette and
-  **Needs you**.
-- Appearance's **Sidebar grouping** is **By workspace** by default. **By folder** opts into the
-  grouping below. The choice applies immediately and persists in the browser's existing Settings
-  record; folder folds are remembered per PC and path.
+- The PC/workspace list and lower Agents list scroll independently above the fixed footer.
+  The Agents heading stays outside its scroll area. An empty or folded Agents list gives its
+  space back to the upper list; PC and workspace folds do not hide agent rows.
+- Each PC's roster has a **Projects** toggle in folder mode or **Workspaces** in workspace mode.
+  It collapses the roster, exposes `aria-expanded`, and opens again when the selected pane changes.
+- In workspace mode, a repository's parent row keeps `workspace.label`; its opened linked
+  worktree rows show their actual checkout branches. Each row's compact status
+  glyph rolls up all of the workspace's panes (blocked, then working, then done, then ready).
+  Clicking its name opens the
+  selected pane in that workspace, else the last viewed pane, else the pane herdr has focused,
+  else its first pane. Tabs and panes are selected from the tab strip and command palette.
+- A repository workspace with linked worktree workspaces has a separate chevron for that
+  worktree group. Ordinary workspaces have no fold control. Worktree folds are remembered at
+  `herdr-web-ui:worktree-group-collapsed:<machineId>:<repo_key>`; a folded group keeps the selected
+  child visible, and status snapshots preserve a deliberate fold.
+- Worktree branches come from the existing `GET /api/worktree/list`, matched by repository key,
+  open workspace ID and normalized checkout path. A listing-confirmed detached checkout reads
+  **Detached HEAD**; without matching branch metadata, the workspace name remains the fallback.
+  A custom workspace name appears beside the branch in dim text; the default name made by
+  replacing branch slashes with dashes is omitted. Full branch, workspace name and checkout
+  path remain in the tooltip. Disk-only checkouts do not become sidebar rows.
+- Create/open responses seed the branch immediately, open the parent group and reveal the
+  selected row within the upper workspace scroll area, including on a phone. Inventory reads
+  run once per repository with opened linked worktrees, through that PC's bound API. Structural
+  checkout changes and returning to the visible page refresh them immediately; a serial 30 s
+  backstop runs only while visible and online. Status changes and renames do not cause git
+  inventory reads. Stale requests cannot overwrite a new branch or another PC's cache; a failed
+  read retains earlier metadata only for the same workspace, repository and checkout path.
+  This adds no status subscription or server contract.
+- **Agents** is an independent pane list: agents from each PC's `snapshot.agents`
+  join the matching pane in `snapshot.panes`; pane agent metadata supplies entries missing
+  from that list, including a recognized OmO pane. Each row opens that agent's pane, shows its own
+  compact status and background-task count, and identifies its PC and workspace. Pane state is
+  authoritative when the agent roster and pane status differ. The workspace and agent lists
+  share the existing combined machine roster and its SSE updates; neither adds a status subscription.
+  A disconnected PC's saved agent rows are dimmed and disabled until that PC reconnects.
+- Appearance's **Sidebar grouping** is **By workspace** by default for new settings and saved records
+  without a valid grouping preference. Explicit **By workspace** and **By folder** choices stay as
+  saved. The choice applies immediately and persists in the existing Settings record; folder
+  folds are remembered per PC and path.
 - In folder mode, within each PC, panes with the same full cwd share a folder group, including panes from
   different workspaces. Trailing separators and Windows slash styles are normalized; case and
   symlinks are not resolved. Unknown cwd stays with its workspace rather than merging unrelated sessions.
   A workspace whose panes sit in two folders has a row in each, opening the pane in that folder.
-- Every folder has a caret, folder glyph, basename, full-path subtitle and pane count, even for
-  one pane. Its indented contents use the existing spacing and border tokens. Folder folds are
-  remembered per PC and path; opening a pane unfolds its folder, but status updates do not.
-- Folder order follows the first workspace in server order; workspace handles still reorder
+  Each row represents its current pane: the selected one in that folder, else the last viewed
+  one there, else the pane herdr has focused, else its first. Its compact glyph rolls up those
+  panes' states; the other panes remain reachable from the tab strip, palette, **Agents** and **Needs you**.
+- Every folder has a caret, an open or closed folder glyph and basename, even for one pane. The
+  folder containing the selection has a neutral rounded fill. Its full path and pane count remain
+  available to screen readers, and the path appears in the tooltip. Contents are indented without
+  tree hairlines. Folder folds are remembered per PC and path; opening a pane unfolds its folder,
+  but status updates do not.
+- Folder order follows the first workspace in server order; dragging workspace rows reorders
   workspaces, not filesystem directories. Workspace names and rename actions remain inside the group.
-- Every row is two lines: agent/shell mark, then the editable title alone on line one (full
-  width), and the state word followed by the row's place on line two. Mark boxes are neutral;
-  the selected row gets the amber rail and an amber-edged mark box. The row carries the
-  workspace's reorder handle in its left gutter (drag, or `Alt+↑/↓` on the handle) and ends in
-  one `⋯` (`.row-menu-toggle`: shown on hover, focus, selection and while its menu is open;
-  always on touch) that opens the row menu. Inline server failures stay beside their row. In the
-  By workspace view a repository's workspace moves past the next or previous group as one, with its
-  worktrees, and a worktree moves among its siblings only.
+- Each workspace row is one line, with its compact state glyph at the right and a custom
+  worktree workspace name as an optional dim secondary label. Linked
+  worktrees alone carry a branch glyph from the workspace metadata, on the workspace row
+  in workspace mode and the representative row in folder mode. Selection uses a neutral
+  rounded fill; workspace rows have no agent avatar, amber rail or separate reorder gutter.
+  Drag the row itself, or press `Alt+↑/↓` while its selector is focused, to reorder it. Dragging
+  is disabled while a name field is open. Each workspace's `⋯` opens its row menu (`.row-menu-toggle`: shown
+  on hover, focus, selection and while its menu is open; always on touch). Inline server failures
+  stay beside their workspace. In the By workspace view a repository's workspace moves past the
+  next or previous group with its worktrees, and a worktree moves among its siblings only.
 - A title that is a working directory written out (`/home/me/dev/api`, `~/dev/api`, `C:\work\api`)
   shows as its last folder, here, in the header, the palette and every alert; the full path stays
-  in the row's tooltip. Line two names what is not already said: by workspace, the workspace and
-  the folder, each only when the title or the other does not already say it; under a folder
-  header, the workspace. The palette, which has no header, names the workspace and the folder,
-  once when they are the same.
+  in the row's tooltip. In folder mode, an unlabelled representative pane whose title repeats
+  its folder uses the workspace name, so sibling shell workspaces remain distinguishable.
+  Workspace mode keeps parent workspace names fixed and names linked checkouts by branch;
+  agent rows show their pane's own title. Each row's
+  place is available to screen readers, without repeating what its title already says. The
+  palette, which has no header, names the workspace and folder once when they are the same.
 - A PC group header is caret, monitor, name, “Host” for the local machine, a state dot
   (done = connected, working pulse = connecting/reconnecting, blocked = error), then a `+` that
   starts a session on that PC (disabled while it is offline) and, for an SSH PC, its manage
@@ -423,9 +470,10 @@ One set for both themes: the card is island black wherever it shows.
   nothing more; every other state is written under the name, with the server's error clamped to
   two lines and complete in the tooltip.
 - In the By workspace view, a repository's worktree workspaces (`workspace.worktree.is_linked_worktree`)
-  sit under the row of the workspace on its main checkout, packed behind a hairline
-  (`.worktree-children`), as herdr's Spaces sidebar keeps them; a worktree whose repository
-  workspace is not open stays at the top level.
+  sit indented under the row of the workspace on its main checkout (`.worktree-children`), without
+  a tree hairline; a worktree whose repository workspace is not open stays at the top level.
+- Rows use only shared theme tokens in dark and light. Touch keeps row menus and folds visible,
+  with `--touch-target` controls; reduced motion removes row transitions and the status spinner.
 - Footer holds the contextual **Install app** action and Settings with the plan meters beside it.
   It carries no product name or version: the running versions are read in Settings.
 
@@ -497,6 +545,8 @@ One set for both themes: the card is island black wherever it shows.
 - **Agent** is the New workspace dialog's picker, under the name: the agent last started, Shell
   for none. It starts in the checkout's pane once the checkout is made. One that fails to start
   leaves the worktree there: the dialog says why, locks its fields, and its button reads **Open**.
+- The browser demo answers the same list/create/open/remove worktree APIs with fictional
+  checkout records, so its branch rows and dialogs work without a filesystem or live herdr.
 
 ### Header context and connection
 - A selected pane shows agent mark + title (`--fs-md`), then on the same line the crumb
@@ -716,7 +766,7 @@ One set for both themes: the card is island black wherever it shows.
   `READY` / `RUN` / `INPUT` and the sentence `Reasoning high` stay in it for assistive tech only
   (`.visually-hidden`): the header names the pane, and the state is told by Stop, the live row
   and the prompt card. `DONE` alone is drawn, before the pill, in `--status-done` caps: nothing
-  else in the chat says a turn ended and was not seen yet, and on a phone the sidebar's label is
+  else in the chat says a turn ended and was not seen yet, and on a phone the sidebar's state is
   in a closed drawer.
 - The model pill (`.composer-pill`) holds the agent mark, the model, the reasoning level and the
   context ring in one quiet surface: `--bg-hover` fill, `--radius-pill`, `--control-h` tall,
@@ -946,7 +996,8 @@ One set for both themes: the card is island black wherever it shows.
 - Icon-only controls carry `aria-label`; toggles expose `aria-pressed` or `role="switch"`; selected
   pane exposes `aria-current`; dialogs expose `role="dialog"` and `aria-modal`.
 - Status, loading and composer progress use `role="status"`; failures use `role="alert"`. Agent state
-  is text plus color, and unknown adds a dashed edge.
+  has text plus color. Compact sidebar states add distinct glyphs and keep their text accessible;
+  unknown uses a question circle there and a dashed badge edge elsewhere.
 - Touch targets grow to `--touch-target`; fields stay `--fs-input` where mobile zoom is a risk.
 - `prefers-reduced-motion` is honored. Lucide/inline SVG decoration is hidden from assistive tech.
 - Global shortcuts use the convention **Mod+Shift+key**: Mod is Command on Apple platforms and Ctrl

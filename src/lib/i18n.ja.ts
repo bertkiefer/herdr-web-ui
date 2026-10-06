@@ -149,6 +149,13 @@ export const JA: Record<string, string> = {
 
   // ---- sidebar ----
   "Herdr workspaces": "herdr ワークスペース",
+  "Projects": "プロジェクト",
+  "Workspaces": "ワークスペース",
+  "Agents": "エージェント",
+  "No agents running": "実行中のエージェントはありません",
+  "Expand worktrees of {name}": "{name} のワークツリーを展開",
+  "Collapse worktrees of {name}": "{name} のワークツリーを折りたたむ",
+  "Worktree: {path}": "ワークツリー: {path}",
   "Loading workspaces…": "ワークスペースを読み込んでいます…",
   "No workspaces yet": "ワークスペースはまだありません",
   "Workspace name": "ワークスペース名",

@@ -151,6 +151,13 @@ export const ZH: Record<string, string> = {
 
   // ---- sidebar ----
   "Herdr workspaces": "herdr 工作区",
+  "Projects": "项目",
+  "Workspaces": "工作区",
+  "Agents": "代理",
+  "No agents running": "没有运行中的代理",
+  "Expand worktrees of {name}": "展开 {name} 的工作树",
+  "Collapse worktrees of {name}": "折叠 {name} 的工作树",
+  "Worktree: {path}": "工作树：{path}",
   "Loading workspaces…": "正在加载工作区…",
   "No workspaces yet": "暂无工作区",
   "Workspace name": "工作区名称",

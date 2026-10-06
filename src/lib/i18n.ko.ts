@@ -147,6 +147,13 @@ export const KO: Record<string, string> = {
 
   // ---- sidebar ----
   "Herdr workspaces": "herdr 워크스페이스",
+  "Projects": "프로젝트",
+  "Workspaces": "워크스페이스",
+  "Agents": "에이전트",
+  "No agents running": "실행 중인 에이전트가 없습니다",
+  "Expand worktrees of {name}": "{name}의 워크트리 펼치기",
+  "Collapse worktrees of {name}": "{name}의 워크트리 접기",
+  "Worktree: {path}": "워크트리: {path}",
   "Loading workspaces…": "워크스페이스 불러오는 중…",
   "No workspaces yet": "아직 워크스페이스가 없습니다",
   "Workspace name": "워크스페이스 이름",
