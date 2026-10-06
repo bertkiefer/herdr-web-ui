@@ -245,7 +245,7 @@ Comfortable values are `:root`; the final column is the complete compact overrid
 | `--control-h` | `34px` | `32px` | Buttons and fields |
 | `--touch-target` | `40px` | — | Coarse-pointer minimum |
 | `--keybar-h` | `48px` | — | Terminal key bar |
-| `--row-h` | `56px` | `44px` | Worktree list rows, the background-task list, chat and composer list height caps |
+| `--row-h` | `56px` | `44px` | Palette, worktree, device and background-task list rows; chat and composer list height caps |
 | `--chip-h` | `20px` | `18px` | Badge/pill height |
 | `--icon-size` | `18px` | — | Standard icon |
 | `--mark-size` | `22px` | — | Brand mark |
@@ -446,7 +446,7 @@ One set for both themes: the card is island black wherever it shows.
   compact status sit at the right. **Needs you** rows are the same row. Pane state is
   authoritative when the agent roster and pane status differ. The workspace and agent lists
   share the existing combined machine roster and its SSE updates; neither adds a status subscription.
-  A disconnected PC's saved agent rows are dimmed and disabled and draw no state until that PC reconnects.
+  A disconnected PC's saved workspace and agent rows are dimmed, inert and draw no state until that PC reconnects.
 - Appearance's **Sidebar grouping** is **By workspace** by default for new settings and saved records
   without a valid grouping preference. Explicit **By workspace** and **By folder** choices stay as
   saved. The choice applies immediately and persists in the existing Settings record; folder

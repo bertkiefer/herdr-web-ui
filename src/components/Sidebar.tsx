@@ -297,6 +297,11 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
       </span>
     );
   };
+  /** the mark in words, for a reader who cannot see it */
+  const markName = (pane: PaneInfo): string => {
+    const entry = agentByPane.get(pane.pane_id);
+    return entry?.agentLabel ?? entry?.canonicalAgent ?? t("Shell");
+  };
   const agentsTitle = (workspace: WorkspaceInfo): string | null => {
     const names = agentNames.get(workspace.workspace_id);
     return names ? t("Agents: {names}", { names: names.join(", ") }) : null;
@@ -524,7 +529,6 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
             }}
           >
             {rowMark(pane, linked)}
-            {linked && <span className="visually-hidden">{t("Worktree: {path}", { path: workspace.worktree!.checkout_path })}</span>}
             <span className="pane-copy">
               <span className="pane-primary">
                 {editingWorkspace ? (
@@ -566,7 +570,9 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
               {place && <span className="pane-subtitle visually-hidden">{place}</span>}
             </span>
             <span className="sidebar-pane-meta">
-              {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={rollupStatus(visiblePanes.map((candidate) => candidate.agent_status))} />}
+              {linked && <span className="visually-hidden">{t("Worktree: {path}", { path: workspace.worktree!.checkout_path })}</span>}
+              <span className="visually-hidden">{markName(pane)}</span>
+              {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={online ? rollupStatus(visiblePanes.map((candidate) => candidate.agent_status)) : undefined} />}
             </span>
           </div>
           <div className="pane-actions">
@@ -664,7 +670,8 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
             {secondaryWorkspaceLabel && <span className="worktree-workspace-label">{secondaryWorkspaceLabel}</span>}
           </span>}
           <span className="sidebar-pane-meta">
-            {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={rollupStatus(statusPanes.map((candidate) => candidate.agent_status))} />}
+            <span className="visually-hidden">{markName(pane)}</span>
+            {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={online ? rollupStatus(statusPanes.map((candidate) => candidate.agent_status)) : undefined} />}
           </span>
         </div>
         <div className="workspace-actions">

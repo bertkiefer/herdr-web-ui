@@ -19,11 +19,14 @@ between releases do not reach them. Remote-PC runtime bundles are versioned sepa
 - The sidebar follows herdr's separate workspace and agent lists, drawn on one quiet grid. Every
   row leads with the coding agent that runs in it (its mark, or a terminal for a shell and a
   branch for a worktree without an agent) and ends in one status column, which stays empty while
-  an agent is ready. Agent rows name the agent, then the workspace, and the PC only when there
-  are several. Sections are parted by space instead of rules, a row's menu button takes no room
-  until the row is hovered or selected, and a worktree group's chevron always shows. Workspace
-  rows keep their names, and agents open their panes directly. Tab and pane navigation stays in
-  the tab strip and palette; saved folder grouping choices stay in effect.
+  an agent is ready. Agent rows name the agent, then the PC when there are several, the workspace
+  and the tab. Sections are parted by space instead of rules, a row's menu button takes no room
+  until the row is hovered or selected, and a linked worktree group folds from a chevron that
+  always shows; folded, it shows the most urgent state among its checkouts. A PC's header says
+  **Host** only beside another PC and draws its dot only while it is not connected; a pane herdr
+  could not restore shows a warning glyph, and the background-task count sits on agent rows.
+  Workspace rows keep their names, and agents open their panes directly. Tab and pane navigation
+  stays in the tab strip and palette; saved folder grouping choices stay in effect.
   ([#521](https://github.com/devswha/herdr-web-ui/pull/521))
 - Opened worktree branches appear beneath their repository workspace, using actual branch names
   from herdr's worktree API and keeping custom workspace names beside them. Creating or opening
@@ -31,9 +34,8 @@ between releases do not reach them. Remote-PC runtime bundles are versioned sepa
   checkouts too. ([#521](https://github.com/devswha/herdr-web-ui/pull/521))
 
 ### Fixed
-- A workspace row's state rolls up as herdr's does. A workspace with one finished agent and one
-  still running shows DONE, where it showed RUN, and a folded worktree group shows the most
-  urgent state among its checkouts instead of the repository workspace's alone.
+- A workspace row's state rolls up as herdr's does: a workspace with one finished agent and one
+  still running shows DONE, where it showed RUN.
   ([#521](https://github.com/devswha/herdr-web-ui/pull/521))
 - Codex chat hides internal memory citation blocks and pairs the answer with its display record,
   so a reply that uses memory appears once without raw citation markup. Quoted code examples

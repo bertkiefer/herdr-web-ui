@@ -14,7 +14,7 @@ import { UsageMeters } from "./UsageMeters.tsx";
 import "./Machines.css";
 import { useT } from "../lib/i18n.ts";
 
-/** The PC header's state word; "connected" is the quiet default and shows as a dot alone. */
+/** The PC header's state word; "connected" is the quiet default and shows nothing, every other state draws a dot and its word under the name. */
 export const STATE_WORD: Readonly<Record<MachineState, string>> = {
   connecting: "Connecting…",
   connected: "Connected",

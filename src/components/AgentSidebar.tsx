@@ -26,7 +26,7 @@ export interface AgentRowBodyProps {
  */
 export function AgentRowBody({ mark, title, context, backgroundTasks, status }: AgentRowBodyProps) {
   return <>
-    <span className="agent-row-mark sidebar-mark" aria-hidden="true">{mark !== null ? <AgentMark agent={mark} size={18} /> : <Terminal />}</span>
+    <span className="sidebar-mark" aria-hidden="true">{mark !== null ? <AgentMark agent={mark} size={18} /> : <Terminal />}</span>
     <span className="agent-copy">
       <span className="agent-title">{title}</span>
       {context && <span className="agent-context">{context}</span>}

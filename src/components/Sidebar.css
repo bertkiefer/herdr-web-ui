@@ -35,9 +35,12 @@
   font: inherit;
   font-size: var(--fs-sm);
   font-weight: var(--fw-regular);
+  border-radius: var(--radius-md);
   line-height: var(--lh-tight);
   text-align: left;
 }
+
+button.sidebar-section-label:focus-visible { outline-offset: calc(var(--ring-offset) * -1); }
 
 @media (hover: hover) {
   button.sidebar-section-label:hover { color: var(--text); }
@@ -251,14 +254,6 @@
   min-width: 0;
 }
 
-.directory-path {
-  overflow: hidden;
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* the fold's caret sits in the status column and shows when it is of use */
 .directory-caret {
   position: absolute;
@@ -280,14 +275,14 @@
   opacity: 0.55;
 }
 
-/* the field's text stays where the title was */
+/* the field's text stays where the title was, and its edge clear of the mark */
 .workspace-rename-input,
 .pane-rename-input {
   flex: 1 1 auto;
   min-width: 0;
   height: calc(var(--control-h) - var(--space-2));
-  margin-left: calc(-1 * var(--space-2));
-  padding: 0 var(--space-2);
+  margin-left: calc(-1 * var(--space-1));
+  padding: 0 var(--space-2) 0 calc(var(--space-1) - var(--hairline));
 }
 
 .sidebar-row-action {
@@ -444,16 +439,6 @@
   height: var(--space-3);
 }
 
-.pane-subtitle {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--text-dim);
-  font-size: var(--fs-xs);
-  line-height: var(--lh-tight);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .sidebar-inline-error {
   margin: 0;
   padding: var(--space-1) var(--space-2) var(--space-2) var(--side-box);
@@ -476,6 +461,7 @@
   gap: 0;
   width: 100%;
   padding: 0 var(--space-2) 0 0;
+  border: 0;
   border-radius: var(--radius-md);
   font-size: var(--fs-md);
   font-weight: var(--fw-regular);
@@ -538,5 +524,5 @@
     transition: none;
   }
 
-  .sidebar-status svg { animation: none; }
+  .sidebar-status[data-status="working"] svg { animation: none; }
 }

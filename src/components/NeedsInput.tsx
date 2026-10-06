@@ -40,8 +40,8 @@ export function NeedsInput({ machines, selectedMachineId, selectedPaneId, onSele
         const tabName = tab && (tabs.length > 1 || customTabLabel(tab)) ? tabLabel(tab, t, tabs.indexOf(tab) + 1) : null;
         const context = agentContext({ agentLabel: entry?.agentLabel ?? null, title, machineName: machines.length > 1 ? machine.name : null, workspaceLabel: workspace.label, tabName }).join(" · ");
         return <li className={`needs-input-item${selected ? " is-selected" : ""}`} key={paneStorageId(machine.id, pane.pane_id)}>
-          <button type="button" className="needs-input-select agent-row" aria-current={selected ? "true" : undefined} onClick={() => onSelect(machine.id, pane.pane_id)}>
-            <AgentRowBody mark={paneMark(entry)} title={title} context={context} status={pane.agent_status} />
+          <button type="button" className="agent-row" aria-current={selected ? "true" : undefined} onClick={() => onSelect(machine.id, pane.pane_id)}>
+            <AgentRowBody mark={paneMark(entry)} title={title} context={context} backgroundTasks={entry?.pane.background_tasks} status={pane.agent_status} />
           </button>
         </li>;
       })}

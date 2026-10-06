@@ -1,11 +1,13 @@
 /* One PC per group: its name is the head of its workspaces. The caret hangs in the rows' leading
    cell, so the name lines up with the titles below it, and the state line with the name. */
 .machine-list {
+  position: relative;
   flex: 1 1 0;
   min-height: 0;
   padding-top: var(--space-2);
   overflow-y: auto;
   overscroll-behavior: contain;
+  scroll-padding-bottom: var(--space-4);
 }
 
 /* a list that is cut fades out at its lower edge */
