@@ -15,14 +15,16 @@ between releases do not reach them. Remote-PC runtime bundles are versioned sepa
 
 - Workspace rows no longer reserve a left column for a reorder grip. Rows can still be dragged
   directly or moved with Alt+Up/Down while focused.
+  ([#521](https://github.com/devswha/herdr-web-ui/pull/521))
 - The sidebar follows herdr's separate workspace and agent lists, with rounded selection and
   compact status icons. Workspace rows keep their names, linked worktree groups can fold, and
   agents open their panes directly. Tab and pane navigation stays in the tab strip and palette;
   saved folder grouping choices stay in effect.
+  ([#521](https://github.com/devswha/herdr-web-ui/pull/521))
 - Opened worktree branches appear beneath their repository workspace, using actual branch names
   from herdr's worktree API and keeping custom workspace names beside them. Creating or opening
   a worktree expands its group. The browser demo supports these worktree actions with fictional
-  checkouts too.
+  checkouts too. ([#521](https://github.com/devswha/herdr-web-ui/pull/521))
 
 ### Fixed
 - Codex chat hides internal memory citation blocks and pairs the answer with its display record,
