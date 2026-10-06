@@ -1,4 +1,15 @@
 .sidebar-shell {
+  /* One grid for every row: a leading cell that says who or what the row is, the title, and a
+     trailing cell that says how it is. The two cells are the columns of the header zone's own
+     buttons above the list. Aliases of existing tokens only. */
+  --side-gutter: var(--space-3);
+  --side-box: var(--control-h);
+  --side-row: var(--control-h);
+  --side-row-2: calc(var(--control-h) + var(--space-3));
+  --side-indent: calc(var(--icon-size) + var(--space-2));
+  --side-action: var(--space-6);
+  --side-hover: color-mix(in srgb, var(--bg-hover) 50%, var(--bg-panel));
+  --side-selected: var(--bg-hover);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -6,44 +17,58 @@
   background: var(--bg-panel);
 }
 
-/* one gutter (--space-3) for the list and the footer: every row's hover fill and the footer
-   buttons share the same left and right edge */
 .sidebar-list {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: var(--space-2) var(--space-3);
+  padding: 0 var(--side-gutter);
 }
 
-.sidebar-section-toggle {
-  display: inline-flex;
+/* section heads (Needs you, a PC's name, Agents): quiet words, never a rule */
+.sidebar-section-label {
+  display: flex;
   align-items: center;
-  gap: var(--space-2);
-  min-height: var(--control-h);
-  margin-bottom: var(--space-2);
-  padding: 0 var(--space-3);
+  min-width: 0;
+  min-height: var(--side-row);
+  margin: 0;
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-dim);
   font: inherit;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
   text-align: left;
-  cursor: pointer;
 }
 
-.sidebar-section-toggle:hover { color: var(--text-strong); }
-
-.sidebar-section-toggle svg {
-  width: var(--space-4);
-  height: var(--space-4);
+@media (hover: hover) {
+  button.sidebar-section-label:hover { color: var(--text); }
 }
 
+/* the leading cell: a coding agent's brand mark, else the place's own glyph */
+.sidebar-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--side-box);
+  width: var(--side-box);
+  color: var(--text-dim);
+}
+
+.sidebar-mark svg {
+  display: block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+/* the marks that ride currentColor (codex, cursor, pi) read as the title does */
+.sidebar-mark .agent-mark {
+  display: inline-flex;
+  color: var(--text);
+}
+
+/* also the connecting shell's one line, which sits outside the grid */
 .tree-state {
   margin: 0;
-  padding: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--side-box, var(--space-2));
   color: var(--text-dim);
   font-size: var(--fs-sm);
 }
@@ -69,209 +94,11 @@
   list-style: none;
 }
 
-/* A linked worktree keeps herdr's repository workspace as its parent. */
-.worktree-children {
-  margin-left: var(--space-6);
-}
-
 .workspace {
   display: flex;
   flex-direction: column;
-  margin-bottom: var(--space-1);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   transition: opacity var(--dur-fast) var(--ease-out);
-}
-
-.workspace-header {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  min-height: calc(var(--control-h) + var(--space-2));
-  border-radius: var(--radius-lg);
-  transition: background-color var(--dur-fast) var(--ease-out);
-}
-
-.workspace-header:hover,
-.workspace-header:focus-within,
-.workspace-group.is-selected > .workspace-header {
-  background: var(--bg-hover);
-}
-
-.workspace-select > svg {
-  flex: 0 0 auto;
-  width: var(--icon-size);
-  height: var(--icon-size);
-}
-
-.workspace-name {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--text);
-  font-size: var(--fs-md);
-  font-weight: var(--fw-medium);
-  line-height: var(--lh-tight);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.workspace-copy {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: var(--space-1);
-  min-width: 0;
-}
-
-.worktree-workspace-label {
-  overflow: hidden;
-  color: var(--text-dim);
-  font-size: var(--fs-xs);
-  line-height: var(--lh-tight);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.workspace-select > .sidebar-status {
-  flex: 0 0 auto;
-}
-
-.workspace-toggle,
-.workspace-actions {
-  opacity: 0;
-  transition: opacity var(--dur-fast) var(--ease-out);
-}
-
-.workspace-actions {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-  padding-right: var(--space-1);
-}
-
-.workspace-header:hover > .workspace-toggle,
-.workspace-header:focus-within > .workspace-toggle,
-.workspace-group.is-selected > .workspace-header > .workspace-toggle,
-.workspace-group.is-collapsed > .workspace-header > .workspace-toggle,
-.workspace-header:hover > .workspace-actions,
-.workspace-header:focus-within > .workspace-actions,
-.workspace-group.is-selected > .workspace-header > .workspace-actions,
-.workspace-actions:has([aria-expanded="true"]) {
-  opacity: 1;
-}
-
-.directory-group {
-  margin-bottom: var(--space-3);
-}
-
-.directory-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  min-height: calc(var(--control-h) + var(--space-2));
-  padding: var(--space-2) var(--space-3);
-  border: 0;
-  border-radius: var(--radius-lg);
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.directory-header:hover,
-.directory-header:focus-visible,
-.directory-group.is-selected > .directory-header {
-  background: var(--bg-hover);
-}
-
-.directory-header > svg {
-  flex: 0 0 auto;
-  width: var(--icon-size);
-  height: var(--icon-size);
-}
-
-.directory-copy {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.directory-name,
-.directory-path {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.directory-name {
-  color: var(--text);
-  font-size: var(--fs-md);
-  font-weight: var(--fw-medium);
-}
-
-.directory-path {
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
-}
-
-.directory-contents {
-  margin-top: var(--space-1);
-  margin-left: var(--space-6);
-}
-
-.directory-caret {
-  color: var(--text-dim);
-  opacity: 0;
-  transition: opacity var(--dur-fast) var(--ease-out);
-}
-
-.directory-header:hover .directory-caret,
-.directory-header:focus-visible .directory-caret,
-.directory-group.is-collapsed .directory-caret { opacity: 1; }
-
-.workspace.is-dragging {
-  opacity: 0.55;
-}
-
-.workspace-rename-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: calc(var(--control-h) - var(--space-1));
-  padding: 0 var(--space-2);
-}
-
-.sidebar-row-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: var(--control-h);
-  height: var(--control-h);
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: var(--radius-sm);
-  color: var(--text-dim);
-  cursor: pointer;
-}
-
-.sidebar-row-action:hover,
-.sidebar-row-action:focus-visible {
-  color: var(--text-strong);
-}
-
-.sidebar-row-action:hover,
-.sidebar-row-action:focus-visible {
-  background: var(--bg-elevated);
-}
-
-.sidebar-row-action svg {
-  width: var(--icon-size);
-  height: var(--icon-size);
 }
 
 .pane-list {
@@ -282,33 +109,29 @@
 
 .pane-item {
   position: relative;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
 }
 
+/* the trailing padding keeps the status cell, which the selector draws at the row's right edge */
+.workspace-header,
 .pane-row {
   position: relative;
   display: flex;
   align-items: center;
   min-width: 0;
-  min-height: calc(var(--control-h) + var(--space-1));
-  border-radius: var(--radius-lg);
+  min-height: var(--side-row);
+  padding-right: var(--side-box);
+  border-radius: var(--radius-md);
   transition: background-color var(--dur-fast) var(--ease-out);
-}
-
-.pane-item:hover > .pane-row,
-.pane-item:focus-within > .pane-row,
-.pane-item.is-selected > .pane-row {
-  background: var(--bg-hover);
 }
 
 .pane-select {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
   flex: 1 1 auto;
   align-self: stretch;
   min-width: 0;
-  padding: var(--space-2);
+  padding: 0;
   background: transparent;
   border: 0;
   border-radius: var(--radius-md);
@@ -317,30 +140,221 @@
   cursor: pointer;
 }
 
-.workspace-select {
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
+/* One indent level. A linked worktree keeps herdr's repository workspace as its parent, a folder
+   its workspaces; the fill stays as wide as the list and the row's content moves. */
+.worktree-children .workspace-header,
+.directory-contents .pane-row {
+  padding-left: var(--side-indent);
 }
 
+/* hover first, selection after it: one neutral fill at two strengths */
+@media (hover: hover) {
+  .workspace-header:hover,
+  .pane-item:hover > .pane-row,
+  .directory-header:hover {
+    background: var(--side-hover);
+  }
+}
 
-/* The Needs you list keeps its agent marks beside the written status. */
-.agent-mark-holder {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 var(--avatar-size);
-  width: var(--avatar-size);
-  height: var(--avatar-size);
-  border: var(--hairline) solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-elevated);
+.workspace-group.is-selected > .workspace-header,
+.pane-item.is-selected > .pane-row {
+  background: var(--side-selected);
+}
+
+/* keyboard focus draws the ring on the whole row and no fill */
+@supports selector(:has(*)) {
+  .workspace-header:has(> .workspace-select:focus-visible),
+  .pane-row:has(> .pane-select:focus-visible) {
+    outline: var(--ring);
+    outline-offset: calc(var(--ring-offset) * -1);
+  }
+
+  .workspace-select:focus-visible { outline: none; }
+}
+
+.workspace-copy {
+  display: flex;
+  align-items: baseline;
+  flex: 1 1 auto;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.workspace-name,
+.sidebar-pane-title,
+.directory-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-name { flex: 0 1 auto; }
+
+/* a worktree workspace's own name follows its branch on the same line, and gives way first */
+.worktree-workspace-label {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-group.is-selected > .workspace-header .workspace-name,
+.pane-item.is-selected > .pane-row .sidebar-pane-title,
+.directory-group.is-selected > .directory-header .directory-name {
   color: var(--text-strong);
 }
 
-.agent-mark-holder svg {
-  display: block;
-  width: var(--mark-size);
-  height: var(--mark-size);
+.workspace-group.is-selected > .workspace-header .sidebar-mark,
+.pane-item.is-selected > .pane-row .sidebar-mark {
+  color: var(--text);
+}
+
+.directory-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--side-row);
+  padding: 0 var(--side-box) 0 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.directory-header:focus-visible { outline-offset: calc(var(--ring-offset) * -1); }
+
+.directory-header > svg:not(.directory-caret) {
+  flex: 0 0 auto;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  margin-inline: calc((var(--side-box) - var(--icon-size)) / 2);
+  color: var(--text-dim);
+}
+
+.directory-copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.directory-path {
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* the fold's caret sits in the status column and shows when it is of use */
+.directory-caret {
+  position: absolute;
+  right: calc((var(--side-box) - var(--space-4)) / 2);
+  width: var(--space-4);
+  height: var(--space-4);
+  color: var(--text-dim);
+  opacity: 0;
+}
+
+.directory-header:focus-visible .directory-caret,
+.directory-group.is-collapsed .directory-caret { opacity: 1; }
+
+@media (hover: hover) {
+  .directory-header:hover .directory-caret { opacity: 1; }
+}
+
+.workspace.is-dragging {
+  opacity: 0.55;
+}
+
+/* the field's text stays where the title was */
+.workspace-rename-input,
+.pane-rename-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: calc(var(--control-h) - var(--space-2));
+  margin-left: calc(-1 * var(--space-2));
+  padding: 0 var(--space-2);
+}
+
+.sidebar-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--side-action);
+  height: var(--side-row);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.sidebar-row-action svg {
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
+.sidebar-row-action:focus-visible {
+  outline-offset: calc(var(--ring-offset) * -1);
+  color: var(--text-strong);
+}
+
+.sidebar-row-action:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .sidebar-row-action:hover:not(:disabled) { color: var(--text-strong); }
+}
+
+/* A row's menu button takes no room until the row is hovered, focused, selected or its menu is
+   open; only the name gives way to it. It stays in the focus order (never display: none): the
+   menu and the confirm dialog hand the focus back to it. */
+.workspace-actions,
+.pane-actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.workspace-header:focus-within > .workspace-actions,
+.workspace-group.is-selected > .workspace-header > .workspace-actions,
+.workspace-actions:has([aria-expanded="true"]),
+.pane-item:focus-within > .pane-row > .pane-actions,
+.pane-item.is-selected > .pane-row > .pane-actions,
+.pane-actions:has([aria-expanded="true"]) {
+  width: auto;
+  overflow: visible;
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .workspace-header:hover > .workspace-actions,
+  .pane-item:hover > .pane-row > .pane-actions {
+    width: auto;
+    overflow: visible;
+    opacity: 1;
+  }
 }
 
 .pane-copy {
@@ -363,42 +377,42 @@
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
-  color: var(--text-strong);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  line-height: var(--lh-tight);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sidebar-pane-title {
-  color: var(--text);
-  font-size: var(--fs-md);
-  font-weight: var(--fw-regular);
-}
-
+/* The status cell belongs to the selector (a click or a drag on it is the row's) and is drawn at
+   the row's right edge, after the menu button and a worktree group's chevron. */
 .sidebar-pane-meta {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: var(--space-1);
 }
 
-/* Compact roster states keep the same label and tooltip as badges on the other surfaces. */
+.workspace-select > .sidebar-pane-meta {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  justify-content: center;
+  width: var(--side-box);
+}
+
+/* Compact states keep the label and tooltip the badges have on the other surfaces. The cell is
+   a box for every state, also when ready or unknown draw nothing in it. */
 .sidebar-status {
   justify-content: center;
-  width: var(--chip-h);
+  flex: 0 0 var(--side-box);
+  width: var(--side-box);
   height: var(--chip-h);
   padding: 0;
   border: 0;
-  border-radius: var(--radius-pill);
+  border-radius: 0;
   background: transparent;
 }
 
 .sidebar-status::before { display: none; }
 
-.sidebar-status svg,
-.pane-worktree svg {
+.sidebar-status svg {
   width: var(--space-4);
   height: var(--space-4);
 }
@@ -407,39 +421,27 @@
   animation: sidebar-working var(--dur-pulse) steps(8, end) infinite;
 }
 
-.pane-worktree {
-  display: inline-flex;
-  color: var(--text-dim);
-}
+.sidebar-status.badge-restore-error { color: var(--status-blocked); }
 
 @keyframes sidebar-working {
   to { transform: rotate(360deg); }
 }
 
-/* line two: the state word first (it is what a glance looks for), then where the pane lives */
-.pane-meta {
-  display: flex;
+/* background tasks still running: a number beside the state, quieter than it */
+.background-count {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.pane-meta .badge {
   flex: 0 0 auto;
-  height: calc(var(--chip-h) - 2px);
-  padding: 0 var(--space-1);
-}
-
-/* background tasks still running: quieter than the state word beside it, and a number, not a word */
-.badge-background {
+  gap: var(--space-1);
   color: var(--text-dim);
-  border-color: var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
   font-variant-numeric: tabular-nums;
 }
 
-.badge-background svg {
-  width: 10px;
-  height: 10px;
+.background-count svg {
+  width: var(--space-3);
+  height: var(--space-3);
 }
 
 .pane-subtitle {
@@ -452,51 +454,43 @@
   white-space: nowrap;
 }
 
-.pane-rename-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: var(--chip-h);
-  padding: 0 var(--space-1);
-  font-size: var(--fs-sm);
-}
-
-.pane-actions {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-  padding-right: var(--space-1);
-  opacity: 0;
-  transition: opacity var(--dur-fast) var(--ease-out);
-}
-
-.pane-item:hover > .pane-row > .pane-actions,
-.pane-item:focus-within > .pane-row > .pane-actions,
-.pane-item.is-selected > .pane-row > .pane-actions,
-.pane-actions:has([aria-expanded="true"]) {
-  opacity: 1;
-}
-
 .sidebar-inline-error {
   margin: 0;
-  padding: var(--space-1) var(--space-3) var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-2) var(--side-box);
   color: var(--status-blocked);
   font-size: var(--fs-xs);
   overflow-wrap: anywhere;
 }
 
+/* the footer's actions are rows on the same grid */
 .sidebar-footer {
   position: relative;
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
-  border-top: var(--hairline) solid var(--border);
+  padding: var(--space-2) var(--side-gutter) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
 }
 
 .sidebar-footer-action {
   justify-content: flex-start;
+  gap: 0;
   width: 100%;
+  padding: 0 var(--space-2) 0 0;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-regular);
+}
+
+.sidebar-footer-action svg {
+  flex: 0 0 auto;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  margin-inline: calc((var(--side-box) - var(--icon-size)) / 2);
+  color: var(--text-dim);
+}
+
+@media (hover: hover) {
+  .sidebar-footer-action:hover:not(:disabled) { background: var(--side-hover); }
 }
 
 /* Settings keeps the room the plan meters beside it leave */
@@ -515,42 +509,32 @@
 
 .sidebar-install-help {
   margin: 0;
-  padding: 0 var(--space-2) var(--space-1);
+  padding: 0 var(--space-2) var(--space-1) var(--side-box);
   color: var(--text-dim);
   font-size: var(--fs-xs);
 }
 
 @media (pointer: coarse) {
-  .workspace-header {
-    min-height: max(var(--touch-target), calc(var(--control-h) + var(--space-2)));
+  .sidebar-shell {
+    --side-row: var(--touch-target);
+    --side-action: var(--touch-target);
   }
 
-  .pane-row,
-  .sidebar-section-toggle,
-  .directory-header { min-height: var(--touch-target); }
-
-  .sidebar-row-action {
-    width: var(--touch-target);
-    height: var(--touch-target);
-  }
-
-  /* Row actions and group toggles stay visible on touch. */
-  .workspace-toggle,
+  /* Row menus and group folds stay visible on touch. */
   .workspace-actions,
-  .pane-actions,
-  .directory-caret {
+  .pane-actions {
+    width: auto;
+    overflow: visible;
     opacity: 1;
   }
+
+  .directory-caret { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .workspace,
   .workspace-header,
-  .workspace-toggle,
-  .workspace-actions,
-  .pane-row,
-  .pane-actions,
-  .directory-caret {
+  .pane-row {
     transition: none;
   }
 

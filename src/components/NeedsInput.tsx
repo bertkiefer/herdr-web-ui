@@ -2,8 +2,10 @@ import type { Machine } from "../../shared/machines.ts";
 import { paneStorageId } from "../../shared/machines.ts";
 import { useT } from "../lib/i18n.ts";
 import { panesNeedingInput } from "../lib/needsInput.ts";
-import { AgentMark } from "./AgentMark.tsx";
-import { displayPaneTitle, StatusBadge } from "./Sidebar.tsx";
+import { agentContext, paneMark, sidebarAgents, type SidebarAgent } from "../lib/sidebarAgents.ts";
+import { customTabLabel, tabLabel } from "../lib/tabName.ts";
+import { AgentRowBody } from "./AgentSidebar.tsx";
+import { displayPaneTitle } from "./Sidebar.tsx";
 import "./NeedsInput.css";
 
 export function NeedsInput({ machines, selectedMachineId, selectedPaneId, onSelect }: {
@@ -14,20 +16,32 @@ export function NeedsInput({ machines, selectedMachineId, selectedPaneId, onSele
 }) {
   const t = useT();
   const waiting = panesNeedingInput(machines);
+  const agentsByMachine = new Map<string, Map<string, SidebarAgent>>();
+  const agentOf = (machine: Machine, paneId: string): SidebarAgent | undefined => {
+    let agents = agentsByMachine.get(machine.id);
+    if (!agents) {
+      agents = new Map(sidebarAgents(machine.snapshot).map((entry) => [entry.pane.pane_id, entry]));
+      agentsByMachine.set(machine.id, agents);
+    }
+    return agents.get(paneId);
+  };
   return <>
     <p className="visually-hidden" role="status">{t("Panes waiting for input: {n}", { n: waiting.length })}</p>
     {waiting.length > 0 && <section className="needs-input" aria-label={t("Needs you")}>
-    <h2 className="needs-input-heading">{t("Needs you")} <span className="pill">{waiting.length}</span></h2>
+    <h2 className="needs-input-heading sidebar-section-label">{t("Needs you")}</h2>
     <ul className="pane-list">
       {waiting.map(({ machine, pane, workspace }) => {
         const selected = machine.id === selectedMachineId && pane.pane_id === selectedPaneId;
+        // the same words the pane has in Agents; a shell that waits has no agent to name
+        const entry = agentOf(machine, pane.pane_id);
+        const title = pane.label?.trim() || entry?.agent?.title?.trim() || pane.title?.trim() || displayPaneTitle(pane);
+        const tabs = machine.snapshot?.tabs.filter((candidate) => candidate.workspace_id === workspace.workspace_id) ?? [];
+        const tab = tabs.find((candidate) => candidate.tab_id === pane.tab_id);
+        const tabName = tab && (tabs.length > 1 || customTabLabel(tab)) ? tabLabel(tab, t, tabs.indexOf(tab) + 1) : null;
+        const context = agentContext({ agentLabel: entry?.agentLabel ?? null, title, machineName: machines.length > 1 ? machine.name : null, workspaceLabel: workspace.label, tabName }).join(" · ");
         return <li className={`needs-input-item${selected ? " is-selected" : ""}`} key={paneStorageId(machine.id, pane.pane_id)}>
-          <button type="button" className="pane-select needs-input-select" aria-current={selected ? "true" : undefined} onClick={() => onSelect(machine.id, pane.pane_id)}>
-            <span className="agent-mark-holder"><AgentMark agent={pane.agent ?? ""} size={22} /></span>
-            <span className="pane-copy">
-              <span className="pane-title">{displayPaneTitle(pane)}</span>
-              <span className="pane-meta"><StatusBadge status={pane.agent_status} /><span className="pane-subtitle">{machine.name} · {workspace.label}</span></span>
-            </span>
+          <button type="button" className="needs-input-select agent-row" aria-current={selected ? "true" : undefined} onClick={() => onSelect(machine.id, pane.pane_id)}>
+            <AgentRowBody mark={paneMark(entry)} title={title} context={context} status={pane.agent_status} />
           </button>
         </li>;
       })}

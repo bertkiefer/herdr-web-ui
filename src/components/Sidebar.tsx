@@ -1,13 +1,14 @@
 import { Fragment, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
-import { Check, ChevronDown, ChevronRight, Circle, CircleHelp, Ellipsis, Folder, FolderOpen, GitBranch, Layers, LoaderCircle, MessageCircle, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Ellipsis, Folder, FolderOpen, GitBranch, Layers, LoaderCircle, MessageCircle, Pencil, Plus, Terminal, Trash2, TriangleAlert, X } from "lucide-react";
 
 import "./Sidebar.css";
 
-import type { AgentStatus, PaneInfo, SessionSnapshot, WorkspaceInfo, HerdrPane } from "../../shared/protocol.ts";
+import type { AgentStatus, PaneInfo, SessionSnapshot, WorkspaceInfo } from "../../shared/protocol.ts";
 import { paneTitle } from "../../shared/notify-policy.ts";
 import { useMachineApi, useMachineId } from "../lib/machineContext.tsx";
 import type { AppActions } from "../lib/actions.ts";
 import { knownStatus, rollupStatus, STATUS_WORD } from "../lib/status.ts";
+import { AgentMark } from "./AgentMark.tsx";
 import { ConfirmDialog } from "./ConfirmDialog.tsx";
 import { RowMenu, type RowMenuItem } from "./RowMenu.tsx";
 import { WorktreeDialog, type WorktreeDialogMode } from "./WorktreeDialog.tsx";
@@ -19,6 +20,7 @@ import { rosterPanes } from "../lib/dagPane.ts";
 import { useSettings, type SidebarGrouping } from "../lib/settings.ts";
 import { useWorktreeBranches } from "../lib/useWorktreeBranches.ts";
 import { worktreeLabel } from "../lib/worktreeName.ts";
+import { paneMark, sidebarAgents, workspaceAgentLabels } from "../lib/sidebarAgents.ts";
 
 const ERROR_NOTE_MS = 5000;
 
@@ -61,10 +63,16 @@ export function displayPaneTitle(pane: PaneInfo): string {
   return pane.label?.trim() || shortPathTitle(stripPaneChrome(paneTitle(pane), pane.agent)) || pane.pane_id;
 }
 
-/** herdr could not bring this pane back after a restart (0.9.3+ `restore_error`): its reason, on hover. */
+/** herdr could not bring this pane back after a restart (0.9.3+ `restore_error`): a warning in the status cell, its reason on hover. */
 export function RestoreErrorBadge({ reason }: { reason: string }) {
   const t = useT();
-  return <span className="badge badge-restore-error" title={reason}>{t("NOT RESTORED")}</span>;
+  const label = t("NOT RESTORED");
+  return (
+    <span className="badge badge-restore-error sidebar-status" data-status="restore-error" role="status" aria-label={label} title={`${label} — ${reason}`}>
+      <TriangleAlert aria-hidden="true" />
+      <span className="visually-hidden">{label}</span>
+    </span>
+  );
 }
 
 export function StatusBadge({ status, compact = false }: { status?: AgentStatus; compact?: boolean }) {
@@ -72,7 +80,8 @@ export function StatusBadge({ status, compact = false }: { status?: AgentStatus;
   const value = knownStatus(status);
   const label = t(STATUS_WORD[value]);
   const description = t("Agent {status}", { status: label });
-  const Icon = { idle: Circle, working: LoaderCircle, blocked: MessageCircle, done: Check, unknown: CircleHelp }[value];
+  // a compact cell draws only the states that ask for a look; ready and unknown keep the cell, its label and its tooltip
+  const Icon = { idle: null, working: LoaderCircle, blocked: MessageCircle, done: Check, unknown: null }[value];
   return (
     <span
       className={`badge badge-${value}${compact ? " sidebar-status" : ""}`}
@@ -81,7 +90,7 @@ export function StatusBadge({ status, compact = false }: { status?: AgentStatus;
       aria-label={compact ? description : undefined}
       title={description}
     >
-      {compact && <Icon aria-hidden="true" />}
+      {compact && Icon && <Icon aria-hidden="true" />}
       <span className={compact ? "visually-hidden" : undefined}>{label}</span>
     </span>
   );
@@ -89,7 +98,7 @@ export function StatusBadge({ status, compact = false }: { status?: AgentStatus;
 
 /**
  * Background tasks an agent started that still run (OmO's `task` children): the main turn can be
- * done while they work, and they wake the session by themselves. A count beside the state word,
+ * done while they work, and they wake the session by themselves. A quiet count beside the state,
  * not a state of its own: DONE stays the moment the agent answered.
  */
 export function BackgroundBadge({ count }: { count?: number }) {
@@ -97,7 +106,7 @@ export function BackgroundBadge({ count }: { count?: number }) {
   if (!count || count <= 0) return null;
   const label = t("Background tasks running: {count}", { count });
   return (
-    <span className="badge badge-background" title={label} aria-label={label} data-testid="background-tasks">
+    <span className="background-count" title={label} aria-label={label} data-testid="background-tasks">
       <Layers aria-hidden="true" />{count}
     </span>
   );
@@ -144,7 +153,6 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
   const [workspaceOrder, setWorkspaceOrder] = useState<string[]>([]);
   const [dragWorkspaceId, setDragWorkspaceId] = useState<string | null>(null);
   const [inlineError, setInlineError] = useState<InlineError | null>(null);
-  const [rosterCollapsed, setRosterCollapsed] = useState(false);
   const rosterId = useId();
   const workspaceRoot = useRef<HTMLDivElement>(null);
   const revealOpenedWorkspace = useRef<string | null>(null);
@@ -158,8 +166,6 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
     const pane = selectedPaneId ? snapshot?.panes.find((pane) => pane.pane_id === selectedPaneId) : undefined;
     if (pane) lastViewed.current.set(pane.workspace_id, pane.pane_id);
   }, [selectedPaneId, snapshot]);
-
-  useEffect(() => { if (selectedPaneId) setRosterCollapsed(false); }, [selectedPaneId]);
 
   const setGroupCollapsed = (groupKey: string, collapsed: boolean): void => {
     setCollapsedGroups((current) => {
@@ -231,6 +237,9 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
   }, [snapshot, workspaceOrder]);
   const roster = useMemo(() => rosterPanes(snapshot?.panes ?? [], selectedPaneId), [snapshot?.panes, selectedPaneId]);
   const directories = useMemo(() => groupDirectories(orderedWorkspaces, roster), [orderedWorkspaces, roster]);
+  const agentRows = useMemo(() => sidebarAgents(snapshot), [snapshot]);
+  const agentByPane = useMemo(() => new Map(agentRows.map((entry) => [entry.pane.pane_id, entry])), [agentRows]);
+  const agentNames = useMemo(() => workspaceAgentLabels(agentRows), [agentRows]);
   // herdr packs a repository's worktree workspaces under the one on its main checkout; a worktree
   // whose repository workspace is not open stays at the top level, in its own place
   const worktreeGroups = useMemo(() => {
@@ -274,6 +283,23 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
       ?? pick(snapshot?.layouts?.find((layout) => layout.tab_id === workspace.active_tab_id)?.focused_pane_id)
       ?? panes.find((pane) => pane.focused)
       ?? panes[0]!;
+  };
+
+  /**
+   * What leads a row: the coding agent in the pane the row opens, so the mark never promises an
+   * agent a click would not reach. A shell is a terminal, a linked worktree without an agent its branch.
+   */
+  const rowMark = (pane: PaneInfo, linked: boolean) => {
+    const mark = paneMark(agentByPane.get(pane.pane_id));
+    return (
+      <span className="sidebar-mark" aria-hidden="true">
+        {mark !== null ? <AgentMark agent={mark} size={18} /> : linked ? <GitBranch /> : <Terminal />}
+      </span>
+    );
+  };
+  const agentsTitle = (workspace: WorkspaceInfo): string | null => {
+    const names = agentNames.get(workspace.workspace_id);
+    return names ? t("Agents: {names}", { names: names.join(", ") }) : null;
   };
 
   const closeMenu = useCallback(() => setMenu(null), []);
@@ -465,6 +491,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
     const editingPane = editingPaneId === pane.pane_id;
     const editingWorkspace = editingWorkspaceId === `${scope}\u0000${workspace.workspace_id}`;
     const menuOpen = menu?.workspace.workspace_id === workspace.workspace_id && menu.scope === scope && menu.kind === undefined;
+    const linked = workspace.worktree?.is_linked_worktree === true;
     return (
       <li
         className={`workspace pane-item${dragWorkspaceId === workspace.workspace_id ? " is-dragging" : ""}${selected ? " is-selected" : ""}`}
@@ -486,7 +513,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
             aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
             aria-description={`${t("Reorder workspace {name}", { name: workspace.label })} · ${t("Drag to reorder · Alt+↑/↓")}`}
             aria-current={selected ? "true" : undefined}
-            title={`${pane.pane_id} — ${fullTitle}${pane.cwd ? ` — ${pane.cwd}` : ""} — ${workspace.label} — ${pane.agent ?? t("Shell")}`}
+            title={[`${pane.pane_id} — ${fullTitle}`, pane.cwd, workspace.label, pane.agent ?? t("Shell"), agentsTitle(workspace)].filter(Boolean).join(" — ")}
             onClick={() => actions.selectPane(pane.pane_id)}
             onKeyDown={(event) => {
               onRowKeyDown(event, workspace.workspace_id);
@@ -496,6 +523,8 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
               actions.selectPane(pane.pane_id);
             }}
           >
+            {rowMark(pane, linked)}
+            {linked && <span className="visually-hidden">{t("Worktree: {path}", { path: workspace.worktree!.checkout_path })}</span>}
             <span className="pane-copy">
               <span className="pane-primary">
                 {editingWorkspace ? (
@@ -537,14 +566,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
               {place && <span className="pane-subtitle visually-hidden">{place}</span>}
             </span>
             <span className="sidebar-pane-meta">
-              {workspace.worktree?.is_linked_worktree && (
-                <span className="pane-worktree" title={t("Worktree: {path}", { path: workspace.worktree.checkout_path })}>
-                  <GitBranch aria-hidden="true" />
-                  <span className="visually-hidden">{t("Worktree: {path}", { path: workspace.worktree.checkout_path })}</span>
-                </span>
-              )}
               {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={rollupStatus(visiblePanes.map((candidate) => candidate.agent_status))} />}
-              <BackgroundBadge count={(pane as HerdrPane).background_tasks} />
             </span>
           </div>
           <div className="pane-actions">
@@ -594,7 +616,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
           aria-description={`${t("Reorder workspace {name}", { name: workspace.label })} · ${t("Drag to reorder · Alt+↑/↓")}`}
           data-pane={pane.pane_id}
           aria-current={selected ? "true" : undefined}
-          title={[`${pane.pane_id} — ${rowTitle}`, rowTitle !== workspace.label ? workspace.label : null, ...paths, paneTitle(pane)].filter(Boolean).join(" — ")}
+          title={[`${pane.pane_id} — ${rowTitle}`, rowTitle !== workspace.label ? workspace.label : null, ...paths, paneTitle(pane), agentsTitle(workspace)].filter(Boolean).join(" — ")}
           onClick={() => actions.selectPane(pane.pane_id)}
           onKeyDown={(event) => {
             onRowKeyDown(event, workspace.workspace_id);
@@ -604,7 +626,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
             actions.selectPane(pane.pane_id);
           }}
         >
-          {workspace.worktree?.is_linked_worktree ? <GitBranch aria-hidden="true" /> : collapsed ? <Folder aria-hidden="true" /> : <FolderOpen aria-hidden="true" />}
+          {rowMark(pane, workspace.worktree?.is_linked_worktree === true)}
           {editingWorkspace ? <input
             className="input workspace-rename-input"
             aria-label={t("Workspace name")}
@@ -640,8 +662,12 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
           </span>}
           <span className="sidebar-pane-meta">
             {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={rollupStatus(panes.map((candidate) => candidate.agent_status))} />}
-            <BackgroundBadge count={(pane as HerdrPane).background_tasks} />
           </span>
+        </div>
+        <div className="workspace-actions">
+          <button type="button" className="sidebar-row-action row-menu-toggle" aria-label={t("More for {title}", { title: rowTitle })} aria-haspopup="menu" aria-expanded={menuOpen} onClick={(event) => menuOpen ? setMenu(null) : setMenu({ anchor: event.currentTarget, workspace, pane, scope: "", title: rowTitle, place: [secondaryWorkspaceLabel, ...paths].filter(Boolean).join(" · ") || workspace.label, kind: "workspace" })}>
+            <Ellipsis aria-hidden="true" />
+          </button>
         </div>
         {children.length > 0 && repoKey !== undefined && <button
           type="button"
@@ -651,11 +677,6 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
           aria-controls={contentsId}
           onClick={() => setWorktreeCollapsed(repoKey, !collapsed)}
         >{collapsed ? <ChevronRight aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}</button>}
-        <div className="workspace-actions">
-          <button type="button" className="sidebar-row-action row-menu-toggle" aria-label={t("More for {title}", { title: rowTitle })} aria-haspopup="menu" aria-expanded={menuOpen} onClick={(event) => menuOpen ? setMenu(null) : setMenu({ anchor: event.currentTarget, workspace, pane, scope: "", title: rowTitle, place: [secondaryWorkspaceLabel, ...paths].filter(Boolean).join(" · ") || workspace.label, kind: "workspace" })}>
-            <Ellipsis aria-hidden="true" />
-          </button>
-        </div>
       </div>
       {inlineError?.workspaceId === workspace.workspace_id && <p className="sidebar-inline-error" role="alert">{inlineError.message}</p>}
     </li>;
@@ -664,11 +685,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
   return (
     <div className="machine-workspaces" ref={workspaceRoot}>
       <nav className="sidebar-list" aria-label={t("Herdr workspaces")}>
-        <button type="button" className="sidebar-section-toggle" aria-expanded={!rosterCollapsed} aria-controls={rosterId} onClick={() => setRosterCollapsed(!rosterCollapsed)}>
-          {byFolder ? t("Projects") : t("Workspaces")}
-          {rosterCollapsed ? <ChevronRight aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
-        </button>
-        <div id={rosterId} hidden={rosterCollapsed}>
+        <>
           {!snapshot && <p className="tree-state" role="status">{t("Loading workspaces…")}</p>}
           {snapshot && snapshot.workspaces.length === 0 && (
             <div className="tree-state-empty">
@@ -705,7 +722,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
           {inlineError && inlineError.workspaceId === undefined && (
             <p className="sidebar-inline-error" role="alert">{inlineError.message}</p>
           )}
-        </div>
+        </>
       </nav>
       {menu && <RowMenu anchor={menu.anchor} title={menu.title} subtitle={menu.place} items={menuItems(menu)} onClose={closeMenu} />}
       {confirm && <ConfirmDialog title={confirm.title} body={confirm.body} confirmLabel={confirm.action ?? t("Close")} onConfirm={confirm.run} escalation={confirm.escalation} onClose={() => setConfirm(null)} />}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import type { AgentInfo, HerdrPane, SessionSnapshot, TabInfo, WorkspaceInfo } from "../../shared/protocol.ts";
-import { sidebarAgents } from "./sidebarAgents.ts";
+import { agentContext, paneMark, sidebarAgents, workspaceAgentLabels } from "./sidebarAgents.ts";
 
 function workspace(id: string): WorkspaceInfo {
   return { workspace_id: id, active_tab_id: `${id}:t1`, label: id, number: 1, tab_count: 1, pane_count: 1, focused: false, agent_status: "idle" };
@@ -79,5 +79,47 @@ describe("sidebarAgents", () => {
     expect(sidebarAgents(snapshot([current], [agent(current, { display_agent: "Review bot", name: "reviewer" })]))[0]!.agentLabel).toBe("Review bot");
     expect(sidebarAgents(snapshot([current], [agent(current, { display_agent: " ", name: "reviewer" })]))[0]!.agentLabel).toBe("reviewer");
     expect(sidebarAgents(snapshot([current], [agent(current)]))[0]!.agentLabel).toBe("codex");
+  });
+});
+
+describe("paneMark", () => {
+  it("draws the agent of the pane a row opens, never another pane's", () => {
+    const shell = pane("shell");
+    const codex = pane("codex", { agent: "codex" });
+    const byPane = new Map(sidebarAgents(snapshot([shell, codex], [agent(codex)])).map((entry) => [entry.pane.pane_id, entry]));
+    expect(paneMark(byPane.get("codex"))).toBe("codex");
+    expect(paneMark(byPane.get("shell"))).toBeNull();
+  });
+
+  it("falls back to the name of an agent herdr lists without a kind", () => {
+    const named = pane("named");
+    const [entry] = sidebarAgents(snapshot([named], [agent(named, { name: "reviewer" })]));
+    expect(paneMark(entry)).toBe("reviewer");
+  });
+});
+
+describe("workspaceAgentLabels", () => {
+  it("names each agent of a workspace once, in roster order", () => {
+    const first = pane("first", { agent: "claude" });
+    const second = pane("second", { agent: "claude" });
+    const third = pane("third", { agent: "codex" });
+    const labels = workspaceAgentLabels(sidebarAgents(snapshot([first, second, third, pane("shell")])));
+    expect([...labels]).toEqual([["w1", ["claude", "codex"]]]);
+  });
+});
+
+describe("agentContext", () => {
+  const base = { agentLabel: "claude", title: "Idempotent payments", machineName: null, workspaceLabel: "checkout-api", tabName: null };
+
+  it("leaves a lone PC unnamed, as herdr does", () => {
+    expect(agentContext(base)).toEqual(["claude", "checkout-api"]);
+    expect(agentContext({ ...base, machineName: "workstation" })).toEqual(["claude", "workstation", "checkout-api"]);
+  });
+
+  it("does not repeat the workspace as its tab, or the title as its agent", () => {
+    expect(agentContext({ ...base, workspaceLabel: "cli-tools", tabName: "cli-tools" })).toEqual(["claude", "cli-tools"]);
+    expect(agentContext({ ...base, tabName: "Review" })).toEqual(["claude", "checkout-api", "Review"]);
+    expect(agentContext({ ...base, tabName: " " })).toEqual(["claude", "checkout-api"]);
+    expect(agentContext({ ...base, title: "claude" })).toEqual(["checkout-api"]);
   });
 });

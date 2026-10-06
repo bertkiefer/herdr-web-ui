@@ -475,6 +475,8 @@ try {
   await stateReceived(page, "a workspace split over two folders has a row in both");
   assert.equal(await page.locator(`${single} ${paneSelector(away)}`).count(), 1);
   assert.equal(await page.locator(`${distinct} ${paneSelector(other.paneId)}`).count(), 1);
+  // a row's menu button takes no room until the row is hovered, focused or selected
+  await page.locator(`${single} ${itemSelector(away)}`).hover();
   await changeState(page, [{ selector: ".workspace-rename-input:focus", count: 1 }, { selector: ".workspace-rename-input", count: 1 }],
     async () => {
       await page.locator(`${single} ${itemSelector(away)} .row-menu-toggle`).click();

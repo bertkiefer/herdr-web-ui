@@ -1,11 +1,12 @@
+/* Agents takes the height of its rows, at most half the sidebar, docked above the footer; the
+   workspace list has the rest. Parted from it by space, not a rule. */
 .agents-sidebar {
   display: flex;
-  flex: 1 1 0;
+  flex: 0 1 auto;
   flex-direction: column;
   min-height: 0;
-  margin-top: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  border-top: var(--hairline) solid var(--border);
+  max-height: 50%;
+  padding: var(--space-2) var(--side-gutter) 0;
 }
 
 .agents-sidebar.is-collapsed,
@@ -20,55 +21,65 @@
 
 .agents-sidebar.is-empty .agent-list-contents { flex: 0 0 auto; }
 
+/* a list that is cut fades out; at the end of its scroll the fade lies over its own spare space */
+.agent-list-contents::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  display: block;
+  height: var(--space-4);
+  background: linear-gradient(transparent, var(--bg-panel));
+  pointer-events: none;
+}
+
+.agents-sidebar.is-empty .agent-list-contents::after { display: none; }
+
 .agent-section-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
   flex: 0 0 auto;
   width: 100%;
-  min-height: var(--control-h);
-  padding: 0 var(--space-3);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-dim);
-  font: inherit;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-  text-align: left;
   cursor: pointer;
 }
 
-.agent-section-toggle:hover { color: var(--text-strong); }
-
-.agent-section-toggle svg {
+/* the fold's caret hangs in the leading cell and shows when it is of use */
+.agent-section-caret {
+  flex: none;
   width: var(--space-4);
   height: var(--space-4);
+  margin-inline: calc((var(--side-box) - var(--space-4)) / 2);
+  opacity: 0;
 }
 
+.agent-section-toggle:focus-visible .agent-section-caret,
+.agents-sidebar.is-collapsed .agent-section-caret { opacity: 1; }
+
+@media (hover: hover) {
+  .agent-section-toggle:hover .agent-section-caret { opacity: 1; }
+}
+
+/* a folded list still says how many agents it holds */
 .agent-section-count {
+  width: var(--side-box);
   margin-left: auto;
-  color: var(--text-dim);
   font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .agent-list {
-  margin: var(--space-1) 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.agent-item { margin-bottom: var(--space-1); }
-
-.agent-select {
+/* the row Agents and Needs you share */
+.agent-row {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
   width: 100%;
-  min-height: calc(var(--control-h) + var(--space-4));
-  padding: var(--space-2) var(--space-3);
+  min-height: var(--side-row-2);
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text);
   font: inherit;
@@ -77,14 +88,15 @@
   transition: background-color var(--dur-fast) var(--ease-out);
 }
 
-.agent-item.is-selected .agent-select,
-.agent-select:focus-visible { background: var(--bg-hover); }
+.agent-row:focus-visible { outline-offset: calc(var(--ring-offset) * -1); }
+.agent-row:disabled { cursor: default; }
 
-.agent-row-mark {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
+@media (hover: hover) {
+  .agent-row:enabled:hover { background: var(--side-hover); }
 }
+
+.agent-item.is-selected > .agent-row,
+.needs-input-item.is-selected > .agent-row { background: var(--side-selected); }
 
 .agent-copy {
   display: flex;
@@ -97,6 +109,7 @@
 .agent-title,
 .agent-context {
   overflow: hidden;
+  line-height: var(--lh-tight);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -104,43 +117,36 @@
 .agent-title {
   color: var(--text);
   font-size: var(--fs-md);
-  line-height: var(--lh-tight);
+  font-weight: var(--fw-regular);
 }
 
-.agent-item.is-selected .agent-title { color: var(--text-strong); }
+.agent-item.is-selected .agent-title,
+.needs-input-item.is-selected .agent-title { color: var(--text-strong); }
 
 .agent-context {
   color: var(--text-dim);
   font-size: var(--fs-xs);
-  line-height: var(--lh-tight);
 }
 
 .agent-row-status {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: var(--space-1);
 }
 
 .agent-item.is-offline { opacity: 0.5; }
-.agent-select:disabled { cursor: default; }
 
 .agent-empty {
   margin: 0;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--side-box);
   color: var(--text-dim);
   font-size: var(--fs-sm);
 }
 
-@media (hover: hover) {
-  .agent-select:enabled:hover { background: var(--bg-hover); }
-}
-
 @media (pointer: coarse) {
-  .agent-section-toggle { min-height: var(--touch-target); }
-  .agent-select { min-height: max(var(--touch-target), calc(var(--control-h) + var(--space-4))); }
+  .agent-section-caret { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .agent-select { transition: none; }
+  .agent-row { transition: none; }
 }

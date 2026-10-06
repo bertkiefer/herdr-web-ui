@@ -58,3 +58,47 @@ export function sidebarAgents(snapshot: SessionSnapshot | null): SidebarAgent[] 
     || left.paneOrder - right.paneOrder,
   ).map(({ row }) => row);
 }
+
+/**
+ * The mark a row draws for the pane it opens: that pane's agent, never another pane's.
+ * A shell (no entry) has none; an agent herdr names without a kind falls back to its label.
+ */
+export function paneMark(entry: SidebarAgent | undefined): string | null {
+  if (!entry) return null;
+  return entry.canonicalAgent ?? entry.agentLabel ?? "";
+}
+
+/** Every agent a workspace runs, each name once, in the roster's order. */
+export function workspaceAgentLabels(agents: readonly SidebarAgent[]): Map<string, string[]> {
+  const byWorkspace = new Map<string, string[]>();
+  for (const { workspace, agentLabel, canonicalAgent } of agents) {
+    const label = agentLabel ?? canonicalAgent;
+    if (!label) continue;
+    const labels = byWorkspace.get(workspace.workspace_id) ?? [];
+    if (!labels.includes(label)) labels.push(label);
+    byWorkspace.set(workspace.workspace_id, labels);
+  }
+  return byWorkspace;
+}
+
+export interface AgentContextParts {
+  agentLabel: string | null;
+  /** the row's first line; an agent named like it is not said twice */
+  title: string;
+  /** null with a single PC: herdr does not name a lone machine either */
+  machineName: string | null;
+  workspaceLabel: string;
+  tabName: string | null;
+}
+
+/** An agent row's second line: who it is, then where it runs, without repeating a word the row already says. */
+export function agentContext({ agentLabel, title, machineName, workspaceLabel, tabName }: AgentContextParts): string[] {
+  const agent = nonblank(agentLabel);
+  const tab = nonblank(tabName);
+  return [
+    agent && agent !== title.trim() ? agent : null,
+    nonblank(machineName),
+    workspaceLabel,
+    tab && tab !== workspaceLabel ? tab : null,
+  ].filter((part): part is string => Boolean(part));
+}
