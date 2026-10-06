@@ -2,8 +2,7 @@ import type { Machine } from "../../shared/machines.ts";
 import { paneStorageId } from "../../shared/machines.ts";
 import { useT } from "../lib/i18n.ts";
 import { panesNeedingInput } from "../lib/needsInput.ts";
-import { agentContext, paneMark, sidebarAgents, type SidebarAgent } from "../lib/sidebarAgents.ts";
-import { customTabLabel, tabLabel } from "../lib/tabName.ts";
+import { agentContext, agentTabName, paneMark, sidebarAgents, type SidebarAgent } from "../lib/sidebarAgents.ts";
 import { AgentRowBody } from "./AgentSidebar.tsx";
 import { displayPaneTitle } from "./Sidebar.tsx";
 import "./NeedsInput.css";
@@ -36,8 +35,7 @@ export function NeedsInput({ machines, selectedMachineId, selectedPaneId, onSele
         const entry = agentOf(machine, pane.pane_id);
         const title = pane.label?.trim() || entry?.agent?.title?.trim() || pane.title?.trim() || displayPaneTitle(pane);
         const tabs = machine.snapshot?.tabs.filter((candidate) => candidate.workspace_id === workspace.workspace_id) ?? [];
-        const tab = tabs.find((candidate) => candidate.tab_id === pane.tab_id);
-        const tabName = tab && (tabs.length > 1 || customTabLabel(tab)) ? tabLabel(tab, t, tabs.indexOf(tab) + 1) : null;
+        const tabName = agentTabName(tabs.find((candidate) => candidate.tab_id === pane.tab_id), tabs, t);
         const context = agentContext({ agentLabel: entry?.agentLabel ?? null, title, machineName: machines.length > 1 ? machine.name : null, workspaceLabel: workspace.label, tabName }).join(" · ");
         return <li className={`needs-input-item${selected ? " is-selected" : ""}`} key={paneStorageId(machine.id, pane.pane_id)}>
           <button type="button" className="agent-row" aria-current={selected ? "true" : undefined} onClick={() => onSelect(machine.id, pane.pane_id)}>

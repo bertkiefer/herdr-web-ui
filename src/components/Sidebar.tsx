@@ -572,7 +572,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
             <span className="sidebar-pane-meta">
               {linked && <span className="visually-hidden">{t("Worktree: {path}", { path: workspace.worktree!.checkout_path })}</span>}
               <span className="visually-hidden">{markName(pane)}</span>
-              {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={online ? rollupStatus(visiblePanes.map((candidate) => candidate.agent_status)) : undefined} />}
+              {online && pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={online ? rollupStatus(visiblePanes.map((candidate) => candidate.agent_status)) : undefined} />}
             </span>
           </div>
           <div className="pane-actions">
@@ -671,7 +671,7 @@ export function Sidebar({ snapshot, online, selectedPaneId, actions }: SidebarPr
           </span>}
           <span className="sidebar-pane-meta">
             <span className="visually-hidden">{markName(pane)}</span>
-            {pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={online ? rollupStatus(statusPanes.map((candidate) => candidate.agent_status)) : undefined} />}
+            {online && pane.restore_error ? <RestoreErrorBadge reason={pane.restore_error} /> : <StatusBadge compact status={online ? rollupStatus(statusPanes.map((candidate) => candidate.agent_status)) : undefined} />}
           </span>
         </div>
         <div className="workspace-actions">

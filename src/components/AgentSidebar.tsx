@@ -5,8 +5,7 @@ import type { Machine } from "../../shared/machines.ts";
 import { paneStorageId } from "../../shared/machines.ts";
 import type { AgentStatus } from "../../shared/protocol.ts";
 import { useT } from "../lib/i18n.ts";
-import { agentContext, paneMark, sidebarAgents } from "../lib/sidebarAgents.ts";
-import { customTabLabel, tabLabel } from "../lib/tabName.ts";
+import { agentContext, agentTabName, paneMark, sidebarAgents } from "../lib/sidebarAgents.ts";
 import { AgentMark } from "./AgentMark.tsx";
 import { BackgroundBadge, displayPaneTitle, StatusBadge } from "./Sidebar.tsx";
 import "./AgentSidebar.css";
@@ -66,7 +65,7 @@ export function AgentSidebar({ machines, selectedMachineId, selectedPaneId, stat
           const online = machine.state === "connected";
           const title = pane.label?.trim() || agent?.title?.trim() || pane.title?.trim() || displayPaneTitle(pane);
           const tabs = machine.snapshot?.tabs.filter((candidate) => candidate.workspace_id === workspace.workspace_id) ?? [];
-          const tabName = tab && (tabs.length > 1 || customTabLabel(tab)) ? tabLabel(tab, t, tabs.findIndex((candidate) => candidate.tab_id === tab.tab_id) + 1) : null;
+          const tabName = agentTabName(tab, tabs, t);
           const context = agentContext({ agentLabel, title, machineName: machines.length > 1 ? machine.name : null, workspaceLabel: workspace.label, tabName }).join(" · ");
           const tooltip = [...new Set([pane.pane_id, title, context, agent?.name, agent?.display_agent, pane.cwd, online ? null : stateWord(machine)].filter(Boolean))].join("\n");
           return <li className={`agent-item${selected ? " is-selected" : ""}${online ? "" : " is-offline"}`} key={paneStorageId(machine.id, pane.pane_id)} data-machine={machine.id} data-pane={pane.pane_id}>

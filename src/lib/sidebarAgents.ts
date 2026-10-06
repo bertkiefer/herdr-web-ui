@@ -1,4 +1,5 @@
 import type { AgentInfo, HerdrPane, SessionSnapshot, TabInfo, WorkspaceInfo } from "../../shared/protocol.ts";
+import { customTabLabel, tabLabel } from "./tabName.ts";
 
 export interface SidebarAgent {
   pane: HerdrPane;
@@ -79,6 +80,17 @@ export function workspaceAgentLabels(agents: readonly SidebarAgent[]): Map<strin
     byWorkspace.set(workspace.workspace_id, labels);
   }
   return byWorkspace;
+}
+
+/**
+ * The tab an agent row names, as herdr's agents panel does: only when its workspace has two or
+ * more tabs or the tab was renamed. A tab is judged by its place in the row, not its number:
+ * herdr relabels the tab that moves up when the one before it closes, and keeps its number.
+ */
+export function agentTabName(tab: TabInfo | null | undefined, workspaceTabs: readonly TabInfo[], t: Parameters<typeof tabLabel>[1]): string | null {
+  if (!tab) return null;
+  const place = workspaceTabs.findIndex((candidate) => candidate.tab_id === tab.tab_id) + 1 || tab.number;
+  return workspaceTabs.length > 1 || customTabLabel(tab, place) ? tabLabel(tab, t, place) : null;
 }
 
 export interface AgentContextParts {

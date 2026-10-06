@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import type { AgentInfo, HerdrPane, SessionSnapshot, TabInfo, WorkspaceInfo } from "../../shared/protocol.ts";
-import { agentContext, paneMark, sidebarAgents, workspaceAgentLabels } from "./sidebarAgents.ts";
+import { agentContext, agentTabName, paneMark, sidebarAgents, workspaceAgentLabels } from "./sidebarAgents.ts";
 
 function workspace(id: string): WorkspaceInfo {
   return { workspace_id: id, active_tab_id: `${id}:t1`, label: id, number: 1, tab_count: 1, pane_count: 1, focused: false, agent_status: "idle" };
@@ -121,5 +121,25 @@ describe("agentContext", () => {
     expect(agentContext({ ...base, tabName: "Review" })).toEqual(["claude", "checkout-api", "Review"]);
     expect(agentContext({ ...base, tabName: " " })).toEqual(["claude", "checkout-api"]);
     expect(agentContext({ ...base, title: "claude" })).toEqual(["checkout-api"]);
+  });
+});
+
+describe("agentTabName", () => {
+  const t = (key: string, vars?: Record<string, string | number>) => key.replace("{n}", String(vars?.n));
+
+  it("names a tab only beside another tab or once it was renamed", () => {
+    const only = tab("w1:t1", "w1");
+    only.label = "1";
+    expect(agentTabName(only, [only], t)).toBeNull();
+    expect(agentTabName({ ...only, label: "Review" }, [only], t)).toBe("Review");
+    const second = { ...tab("w1:t2", "w1"), label: "2", number: 2 };
+    expect(agentTabName(second, [only, second], t)).toBe("Tab 2");
+    expect(agentTabName(null, [only], t)).toBeNull();
+  });
+
+  it("does not take the tab that moved up after a close for a renamed one", () => {
+    // herdr relabels the survivor "1" and leaves its number at 2
+    const survivor = { ...tab("w1:t2", "w1"), label: "1", number: 2 };
+    expect(agentTabName(survivor, [survivor], t)).toBeNull();
   });
 });
