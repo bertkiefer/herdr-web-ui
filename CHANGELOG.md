@@ -17,6 +17,8 @@ between releases do not reach them. Remote-PC runtime bundles are versioned sepa
 - Codex chat hides internal memory citation blocks and pairs the answer with its display record,
   so a reply that uses memory appears once without raw citation markup. Quoted code examples
   keep their text. ([#514](https://github.com/devswha/herdr-web-ui/pull/514) by @JJLiebig)
+- The Claude usage meter shows a model's own weekly limit, such as Fable's, which Anthropic
+  reports only in its list of limits; the Opus and Sonnet weeks are still read as before.
 
 ## [0.3.52] - 2026-10-06
 
