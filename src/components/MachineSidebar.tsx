@@ -71,8 +71,8 @@ function MachineGroup({ machine, ...props }: Props & { machine: Machine }) {
       <button className="machine-toggle sidebar-section-label" aria-expanded={!collapsed} onClick={toggle}>
         {collapsed ? <ChevronRight className="machine-caret" aria-hidden="true" /> : <ChevronDown className="machine-caret" aria-hidden="true" />}
         <span className="machine-name">{machine.name}</span>
-        {/* the computer this app's server runs on; on a phone "this PC" read as the phone. Said only beside another PC */}
-        {machine.kind === "local" && props.machines.length > 1 && <span className="machine-kind" title={t("The computer this app runs on")}>{t("Host")}</span>}
+        {/* the computer this app's server runs on; on a phone "this PC" read as the phone */}
+        {machine.kind === "local" && <span className="machine-kind" title={t("The computer this app runs on")}>{t("Host")}</span>}
         {/* connected is the norm: the dot shows only while the PC is anything else */}
         {!online && <span className={`machine-dot is-${machine.state}`} title={t(STATE_WORD[machine.state])} aria-hidden="true" />}
       </button>

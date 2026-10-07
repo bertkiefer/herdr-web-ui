@@ -486,8 +486,9 @@ One set for both themes: the card is island black wherever it shows.
   agent rows show their pane's own title. Each row's
   place is available to screen readers, without repeating what its title already says. The
   palette, which has no header, names the workspace and folder once when they are the same.
-- A PC group header is a caret, the name, “Host” for the local machine when two or more PCs are
-  registered, and a state dot only while the PC is not connected (working pulse =
+- A PC group header is a caret, the name, “Host” for the local machine (also when it is the only
+  PC: the name alone does not say which computer it is), and a state dot only while the PC is not
+  connected (working pulse =
   connecting/reconnecting, blocked = error), then a `+` in the status column that starts a
   workspace on that PC (disabled while it is offline). An SSH PC's manage button sits before the
   `+` and shows on hover, focus, while its panel is open, while the PC is not connected, and always
