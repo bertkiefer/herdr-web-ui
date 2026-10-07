@@ -89,6 +89,7 @@ between releases do not reach them. Remote-PC runtime bundles are versioned sepa
   ([#508](https://github.com/devswha/herdr-web-ui/pull/508))
 - The Claude usage meter shows a model's own weekly limit, such as Fable's, which Anthropic
   reports only in its list of limits; the Opus and Sonnet weeks are still read as before.
+  ([#532](https://github.com/devswha/herdr-web-ui/pull/532) by @bertkiefer)
 
 ## [0.3.52] - 2026-10-06
 
