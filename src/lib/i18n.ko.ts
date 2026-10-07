@@ -164,6 +164,7 @@ export const KO: Record<string, string> = {
   "By workspace": "워크스페이스별",
   "By folder": "폴더별",
   "Drag to reorder · Alt+↑/↓": "끌어서 순서 바꾸기 · Alt+↑/↓",
+  "Resize sidebar": "사이드바 너비 조절",
   "Shell": "셸",
   "Pane name": "패널 이름",
   "Rename pane": "패널 이름 바꾸기",

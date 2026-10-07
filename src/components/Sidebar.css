@@ -428,6 +428,7 @@ button.sidebar-section-label:focus-visible { outline-offset: calc(var(--ring-off
   align-items: center;
   flex: 0 0 auto;
   gap: var(--space-1);
+  margin-left: var(--space-2);
   color: var(--text-dim);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);

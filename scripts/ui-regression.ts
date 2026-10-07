@@ -351,6 +351,33 @@ try {
   await until(async () => await page.evaluate(() => document.activeElement?.matches(".sidebar-toggle, .drawer-toggle") ?? false), "focus returns to the workspace-list toggle after Add PC closes");
   console.log("PASS Add PC opens from Settings, and the sidebar has no top bar");
 
+  // the sidebar's right edge resizes it: its own top row in the header follows, the width is
+  // kept on this device, the arrows move it from the keyboard and a double-click forgets it
+  const sidebarWidths = () => page.evaluate(() => ({
+    sidebar: Math.round(document.querySelector(".sidebar")!.getBoundingClientRect().width),
+    header: Math.round(document.querySelector(".header-side")!.getBoundingClientRect().width),
+    stored: localStorage.getItem("herdr-web-ui:sidebar-width"),
+  }));
+  const defaultWidths = await sidebarWidths();
+  assert.equal(defaultWidths.stored, null, "no sidebar width is stored before the edge is dragged");
+  const resizer = page.getByRole("separator", { name: "Resize sidebar", exact: true });
+  const edge = (await resizer.boundingBox())!;
+  await page.mouse.move(edge.x + edge.width / 2, 400);
+  await page.mouse.down();
+  await page.mouse.move(edge.x + edge.width / 2 + 80, 400, { steps: 4 });
+  await page.mouse.up();
+  const dragged = await sidebarWidths();
+  assert.equal(dragged.sidebar, defaultWidths.sidebar + 80, "the sidebar follows its dragged edge");
+  assert.equal(dragged.header, dragged.sidebar, "the sidebar's top row in the header keeps the sidebar's width");
+  assert.equal(dragged.stored, String(dragged.sidebar), "the dragged width is kept on this device");
+  await resizer.focus();
+  await page.keyboard.press("ArrowLeft");
+  assert.equal((await sidebarWidths()).sidebar, dragged.sidebar - 16, "an arrow key moves the focused edge one step");
+  assert.equal(await resizer.getAttribute("aria-valuenow"), String(dragged.sidebar - 16));
+  await resizer.dblclick();
+  assert.deepEqual(await sidebarWidths(), defaultWidths, "a double-click goes back to the default width and forgets the stored one");
+  console.log("PASS the sidebar's edge drags, steps from the keyboard, remembers its width and resets on a double-click");
+
   // An update request answered while the page is hidden (a phone app sent to the background) must
   // still release the buttons: the status poll stops with the page, the request does not.
   let releaseCheck!: () => void;

@@ -241,7 +241,7 @@ Comfortable values are `:root`; the final column is the complete compact overrid
 |-------|-------------|---------|-------|
 | `--header-h` | `52px` | `46px` | App header below `769px` |
 | `--header-h-wide` | `46px` | — | App header from `769px`, in either density (`--header-h` takes this value there) |
-| `--sidebar-w` | `320px` | `300px` | Sidebar/drawer |
+| `--sidebar-w` | `320px` | `300px` | Sidebar/drawer; the default while the user has not dragged the sidebar's edge |
 | `--control-h` | `34px` | `32px` | Buttons and fields |
 | `--touch-target` | `40px` | — | Coarse-pointer minimum |
 | `--keybar-h` | `48px` | — | Terminal key bar |
@@ -309,7 +309,14 @@ One set for both themes: the card is island black wherever it shows.
   the tab strip, never across the window: the sidebar and its top row stay one piece. With the
   sidebar collapsed the toggle and the palette sit in the one bar. Below `769px` the header is the `--bg-panel` bar with
   its rule: the installed app's `theme-color` matches it.
-- The sidebar is fixed-width on desktop and a `<=768px` drawer. The desktop collapse removes its
+- From `769px` the sidebar's right edge is a grip (`.sidebar-resizer`, `role="separator"`): drag
+  it to resize the sidebar between `240px` and `520px`, never past half the window; the arrow
+  keys move the focused edge `16px`, Home and End go to the limits, and a double-click returns to
+  `--sidebar-w`. The seam shows `--border-strong` under a pointer and `--accent` while held or
+  focused. The chosen width is kept per device (`herdr-web-ui:sidebar-width`) and written as
+  `--sidebar-user-w` on `.app`; the sidebar and its top row in the header both read
+  `--sidebar-shown-w`. A phone's drawer keeps `--sidebar-w`.
+- The sidebar keeps its width on desktop until its edge is dragged, and is a `<=768px` drawer. The desktop collapse removes its
   column; the drawer uses a scrim and keeps safe-area insets. On touch, a mostly horizontal swipe in
   from the left `24px` edge opens the drawer and a swipe to the left closes it (`56px` of travel).
 - The terminal stack contains a positioned terminal surface, then composer or key bar. The xterm

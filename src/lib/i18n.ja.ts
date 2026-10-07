@@ -166,6 +166,7 @@ export const JA: Record<string, string> = {
   "By workspace": "ワークスペース別",
   "By folder": "フォルダー別",
   "Drag to reorder · Alt+↑/↓": "ドラッグで並べ替え · Alt+↑/↓",
+  "Resize sidebar": "サイドバーの幅を変更",
   "Shell": "シェル",
   "Pane name": "ペイン名",
   "Rename pane": "ペインの名前を変更",
